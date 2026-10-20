@@ -1,5 +1,78 @@
-const f=document.getElementById('f'),btn=document.getElementById('btn'),msg=document.getElementById('msg');
-f.addEventListener('submit',async e=>{e.preventDefault();if(!f.reportValidity())return;btn.disabled=true;btn.textContent='申込処理中…';msg.hidden=true;const d=new FormData(f),payload={name:d.get('name'),email:d.get('email'),company:d.get('company'),quantity:Number(d.get('quantity')),memo:d.get('memo')};try{const r=await api_({action:'submitOrder',payload});if(!r.ok)throw new Error(r.error||'申込に失敗しました。');msg.className='message success';msg.innerHTML=`<b>お申し込みを受け付けました！</b><br><br>申込番号：<b>${esc_(r.orderId)}</b><br>金額：${Number(r.amount).toLocaleString('ja-JP')}円<br><br>ご入金確認後、QRチケットをメールでお送りします。`;msg.hidden=false;f.reset();}catch(x){msg.className='message error';msg.textContent='エラー：'+(x.message||x);msg.hidden=false;}finally{btn.disabled=false;btn.textContent='申し込む';}});
-async function api_(body){const r=await fetch(url_(),{method:'POST',redirect:'follow',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify(body)});if(!r.ok)throw new Error(`通信エラー (${r.status})`);return r.json();}
-function url_(){const u=String(window.TICKET_CONFIG?.GAS_API_URL||'').trim();if(!u||u.includes('PASTE_YOUR'))throw new Error('config.js にGAS URLを設定してください。');return u;}
-function esc_(v){return String(v??'').replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;').replaceAll('"','&quot;').replaceAll("'",'&#039;');}
+
+const f = document.getElementById('f');
+const btn = document.getElementById('btn');
+const msg = document.getElementById('msg');
+
+f.addEventListener('submit', function(e) {
+  e.preventDefault();
+
+  const data = new FormData(f);
+  const quantity = Number(data.get('quantity'));
+
+  if (!Number.isInteger(quantity) ||
+      quantity < 25 || quantity > 1000) {
+    showError('枚数は25〜1,000枚で入力してください。');
+    return;
+  }
+
+  const url = window.TICKET_CONFIG?.GAS_API_URL;
+
+  if (!url || url.includes('PASTE_YOUR')) {
+    showError('GASのURLが設定されていません。');
+    return;
+  }
+
+  const payload = {
+    action: 'submitOrder',
+    payload: {
+      name: data.get('name'),
+      email: data.get('email'),
+      company: data.get('company'),
+      quantity: quantity,
+      memo: data.get('memo')
+    }
+  };
+
+  const iframeName = 'gasSubmitFrame';
+
+  let iframe = document.getElementById(iframeName);
+
+  if (!iframe) {
+    iframe = document.createElement('iframe');
+    iframe.id = iframeName;
+    iframe.name = iframeName;
+    iframe.style.display = 'none';
+    document.body.appendChild(iframe);
+  }
+
+  const form = document.createElement('form');
+  form.method = 'POST';
+  form.action = url;
+  form.target = iframeName;
+  form.style.display = 'none';
+
+  const input = document.createElement('input');
+  input.type = 'hidden';
+  input.name = 'payload';
+  input.value = JSON.stringify(payload);
+
+  form.appendChild(input);
+  document.body.appendChild(form);
+
+  form.submit();
+  form.remove();
+
+  btn.textContent = '送信しました（確認中）';
+  btn.disabled = true;
+
+  msg.hidden = false;
+  msg.className = 'message';
+  msg.textContent =
+    '送信処理を行いました。現在、申込の登録結果を確認中です。';
+});
+
+function showError(message) {
+  msg.hidden = false;
+  msg.className = 'message error';
+  msg.textContent = 'エラー：' + message;
+}
