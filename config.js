@@ -1,3 +1,3 @@
-window.TICKET_CONFIG={
-  GAS_API_URL:'PASTE_YOUR_GAS_WEB_APP_EXEC_URL_HERE'
+window.TICKET_CONFIG = {
+  GAS_API_URL: 'https://script.google.com/macros/s/AKfycbzfxbIXGVcf1hk6UpKLLcpzwBgsWaIeBW0EPxYqGl09HldLbRIucd7fSD_yo3YAHWIokA/exec'
 };
