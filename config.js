@@ -1,3 +1,3 @@
 window.TICKET_CONFIG = {
-  GAS_API_URL: 'https://script.google.com/macros/s/AKfycbzfxbIXGVcf1hk6UpKLLcpzwBgsWaIeBW0EPxYqGl09HldLbRIucd7fSD_yo3YAHWIokA/exec'
+  GAS_API_URL: 'https://script.google.com/macros/s/AKfycbyCsI1y6ifx3p3sbHzzbalGSaFInmHL0KSGyWPJD4Ms5qTAaMWZLkLhASf5QdqiU_EHKA/exec'
 };
